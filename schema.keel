@@ -1,0 +1,90 @@
+model Profile {
+    fields {
+        identity Identity @unique
+        username Text @unique
+        // Adding the following fields crashes keel
+        // follows Follow[]
+        // following Follow[]
+    }
+
+    operations {
+        create createProfile() with (username) {
+            @set(profile.identity = ctx.identity)
+        }
+        get myProfile() {
+            @where(profile.identity == ctx.identity)
+        }
+        get profile(id)
+    }
+}
+
+model Post {
+    fields {
+        author Profile
+        body Text
+    }
+
+    operations {
+        create createPost() with (author.id, body) {
+            @permission(expression: post.author.identity == ctx.identity)
+        }
+        list posts(author.id)
+    }
+
+    functions {
+        list timeline(profileId: ID)
+    }
+}
+
+model Like {
+    fields {
+        post Post
+        profile Profile
+    }
+
+    // Need: @nique([post, profile])
+    operations {
+        create likePost() with (post.id, profile.id) {
+            @permission(expression: like.profile.identity == ctx.identity)
+        }
+        list postLikes(post.id)
+        list profileLikes(profile.id)
+    }
+
+    functions {
+        delete unlikePost(post.id, profile.id) {
+            @permission(expression: like.profile.identity == ctx.identity)
+        }
+    }
+}
+
+model Follow {
+    fields {
+        to Profile
+        from Profile
+    }
+
+    // Need: @nique([to, from])
+    operations {
+        create follow() with (to.id, from.id) {
+            @permission(expression: follow.from.identity == ctx.identity)
+        }
+        list follows(from.id)
+        list followers(to.id)
+    }
+
+    functions {
+        delete unfollow(to.id, from.id) {
+            @permission(expression: follow.from.identity == ctx.identity)
+        }
+    }
+}
+
+api App {
+    models {
+        Post
+        Profile
+        Follow
+        Like
+    }
+}

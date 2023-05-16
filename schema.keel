@@ -32,6 +32,7 @@ model Post {
     }
 
     functions {
+        // This seems to break syntax highlighting
         list timeline(profileId: ID)
     }
 }
@@ -42,7 +43,6 @@ model Like {
         profile Profile
     }
 
-    // Need: @nique([post, profile])
     operations {
         create likePost() with (post.id, profile.id) {
             @permission(expression: like.profile.identity == ctx.identity)
@@ -56,6 +56,9 @@ model Like {
             @permission(expression: like.profile.identity == ctx.identity)
         }
     }
+
+    // Not implemented - doesn't create database constraint
+    @unique([post, profile])
 }
 
 model Follow {
@@ -64,7 +67,6 @@ model Follow {
         from Profile
     }
 
-    // Need: @nique([to, from])
     operations {
         create follow() with (to.id, from.id) {
             @permission(expression: follow.from.identity == ctx.identity)
@@ -78,6 +80,9 @@ model Follow {
             @permission(expression: follow.from.identity == ctx.identity)
         }
     }
+
+    // Not implemented - doesn't create database constraint
+    @unique([to, from])
 }
 
 api App {

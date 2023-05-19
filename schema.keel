@@ -2,9 +2,8 @@ model Profile {
     fields {
         identity Identity @unique
         username Text @unique
-        // Adding the following fields crashes keel
-        // follows Follow[]
-        // following Follow[]
+        follows Follow[]
+        following Follow[]
     }
 
     operations {
@@ -16,6 +15,11 @@ model Profile {
         }
         get profile(id)
     }
+
+    @permission(
+        expression: true,
+        actions: [get]
+    )
 }
 
 model Post {
@@ -63,8 +67,8 @@ model Like {
 
 model Follow {
     fields {
-        to Profile
-        from Profile
+        to Profile @relation(follows)
+        from Profile @relation(following)
     }
 
     operations {
